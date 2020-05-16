@@ -1,7 +1,7 @@
 {
   "name": "π.$",
-  "description": "Userbot created by a SNAPDRAGON and custom fork by https://t.me/mrconfused contact @mrconfused for support",
-  "logo": "https://telegra.ph/file/f8ab330abd9a8a43f5a40.jpg",
+  "description": "Bu UserBot Rashtion tarafindan geliştirilmiştir. 
+  Support grubu; t.me//atomusersupport",
   "keywords": [
     "telegram",
     "userbot",
@@ -9,7 +9,7 @@
     "modular",
     "productivity"
   ],
-  "repository": "https://github.com/sandy1709/catuserbot/",
+  "repository": "https://github.com/rashtion/AtomZ-UserBot/",
   "website": "#TODO",
   "success_url": "#TODO",
   "env": {
@@ -27,11 +27,11 @@
       "value": ""
     },
     "APP_ID": {
-      "description": "Get this value from my.telegram.org! Please do not steal",
+      "description": "Bu alanı my.telegram.org adresindeki API_KEY ile doldurunuz.",
       "value": ""
     },
     "API_HASH": {
-      "description": "Get this value from my.telegram.org! Please do not steal",
+      "description": "Bu alanı my.telegram.org adresindeki API_HASH ile doldurunuz.",
       "value": ""
     },
     "STRING_SESSION": {
