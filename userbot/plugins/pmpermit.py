@@ -1,221 +1,295 @@
-import asyncio
-import io
-import userbot.plugins.sql_helper.pmpermit_sql as pmpermit_sql
-from telethon.tl.functions.users import GetFullUserRequest
-from telethon import events, errors, functions, types
-from userbot import ALIVE_NAME, LESS_SPAMMY
-from userbot.utils import admin_cmd
-from userbot import CMD_HELP
+# Copyright (C) 2020 TeamDerUntergang.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 
-PM_WARNS = {}
-PREV_REPLY_MESSAGE = {}
-CACHE = {}
+""" Kimin size özel mesaj gönderebileceğini kontrol altına almanızı sağlayan UserBot modülüdür. """
 
+from telethon.tl.functions.contacts import BlockRequest, UnblockRequest
+from telethon.tl.functions.messages import ReportSpamRequest
+from telethon.tl.types import User
+from sqlalchemy.exc import IntegrityError
 
-DEFAULTUSER = str(ALIVE_NAME) if ALIVE_NAME else "**No name set yet nibba, check pinned message in** @XtraTgBot"
-USER_BOT_WARN_ZERO = "`You were spamming my peru master's inbox, henceforth your retarded lame ass has been blocked by my master's userbot.` **Now GTFO, i'm playing minecraft** "
-USER_BOT_NO_WARN = ("[──▄█▀█▄─────────██ \n▄████████▄───▄▀█▄▄▄▄ \n██▀▼▼▼▼▼─▄▀──█▄▄ \n█████▄▲▲▲─▄▄▄▀───▀▄ \n██████▀▀▀▀─▀────────▀▀](tg://user?id=1035034432)\n\n"
-                    "`Hello, this is cat Security Service.You have found your way here to my master,`"
-                    f"{DEFAULTUSER}'s` inbox.\n\n"
-                    "Leave your name,reason and 10k$ and hopefully you'll get a reply within 2 light years.`\n\n"
-                    "** Send** `/start` ** so that we can decide why you're here.**")
+from sedenbot import (COUNT_PM, CMD_HELP, BOTLOG, BOTLOG_CHATID,
+                     PM_AUTO_BAN, LASTMSG, LOGS)
+from sedenbot.events import sedenify
 
-
-if Var.PRIVATE_GROUP_ID is not None:
-    @command(pattern="^.approve ?(.*)")
-    async def approve_p_m(event):
-        if event.fwd_from:
-           return
-        replied_user = await event.client(GetFullUserRequest(event.chat_id))
-        firstname = replied_user.user.first_name
-        reason = event.pattern_match.group(1)
-        chat = await event.get_chat()
-        if event.is_private:
-            if not pmpermit_sql.is_approved(chat.id):
-                if chat.id in PM_WARNS:
-                    del PM_WARNS[chat.id]
-                if chat.id in PREV_REPLY_MESSAGE:
-                    await PREV_REPLY_MESSAGE[chat.id].delete()
-                    del PREV_REPLY_MESSAGE[chat.id]
-                pmpermit_sql.approve(chat.id, reason)
-                await event.edit("Approved to pm [{}](tg://user?id={})".format(firstname, chat.id))
-                await asyncio.sleep(3)
-                await event.delete()
-
-
-    @bot.on(events.NewMessage(outgoing=True))
-    async def you_dm_niqq(event):
-        if event.fwd_from:
-            return
-        chat = await event.get_chat()
-        if event.is_private:
-            if not pmpermit_sql.is_approved(chat.id):
-                if not chat.id in PM_WARNS:
-                    pmpermit_sql.approve(chat.id, "outgoing")
-                    bruh = "__Added user to approved pms cuz outgoing message >~<__"
-                    rko = await borg.send_message(event.chat_id, bruh)
-                    await asyncio.sleep(3)
-                    await rko.delete()
-
-    @command(pattern="^.disapprove ?(.*)")
-    async def disapprove_p_m(event):
-        if event.fwd_from:
-            return
-        replied_user = await event.client(GetFullUserRequest(event.chat_id))
-        firstname = replied_user.user.first_name
-        reason = event.pattern_match.group(1)
-        chat = await event.get_chat()
-        if event.is_private:
-            if pmpermit_sql.is_approved(chat.id):
-                pmpermit_sql.disapprove(chat.id)
-                await event.edit("disapproved to pm [{}](tg://user?id={})".format(firstname, chat.id))           
-                
-    @command(pattern="^.block ?(.*)")
-    async def block_p_m(event):
-        if event.fwd_from:
-            return
-        replied_user = await event.client(GetFullUserRequest(event.chat_id))
-        firstname = replied_user.user.first_name
-        reason = event.pattern_match.group(1)
-        chat = await event.get_chat()
-        if event.is_private:
-            if pmpermit_sql.is_approved(chat.id):
-                pmpermit_sql.disapprove(chat.id)
-                await event.edit(" ███████▄▄███████████▄  \n▓▓▓▓▓▓█░░░░░░░░░░░░░░█\n▓▓▓▓▓▓█░░░░░░░░░░░░░░█\n▓▓▓▓▓▓█░░░░░░░░░░░░░░█\n▓▓▓▓▓▓█░░░░░░░░░░░░░░█\n▓▓▓▓▓▓█░░░░░░░░░░░░░░█\n▓▓▓▓▓▓███░░░░░░░░░░░░█\n██████▀▀▀█░░░░██████▀  \n░░░░░░░░░█░░░░█  \n░░░░░░░░░░█░░░█  \n░░░░░░░░░░░█░░█  \n░░░░░░░░░░░█░░█  \n░░░░░░░░░░░░▀▀ \n\nFuck Off Bitch, Now You Can't Message Me..[{}](tg://user?id={})".format(firstname, chat.id))
-                await asyncio.sleep(3)
-                await event.client(functions.contacts.BlockRequest(chat.id))
-
-
-    @command(pattern="^.listapproved")
-    async def approve_p_m(event):
-        if event.fwd_from:
-            return
-        approved_users = pmpermit_sql.get_all_approved()
-        APPROVED_PMs = "Current Approved PMs\n"
-        if len(approved_users) > 0:
-            for a_user in approved_users:
-                if a_user.reason:
-                    APPROVED_PMs += f"👉 [{a_user.chat_id}](tg://user?id={a_user.chat_id}) for {a_user.reason}\n"
-                else:
-                    APPROVED_PMs += f"👉 [{a_user.chat_id}](tg://user?id={a_user.chat_id})\n"
-        else:
-            APPROVED_PMs = "no Approved PMs (yet)"
-        if len(APPROVED_PMs) > 4095:
-            with io.BytesIO(str.encode(APPROVED_PMs)) as out_file:
-                out_file.name = "approved.pms.text"
-                await event.client.send_file(
-                    event.chat_id,
-                    out_file,
-                    force_document=True,
-                    allow_cache=False,
-                    caption="Current Approved PMs",
-                    reply_to=event
-                )
-                await event.delete()
-        else:
-            await event.edit(APPROVED_PMs)
-
-
-    @bot.on(events.NewMessage(incoming=True))
-    async def on_new_private_message(event):
-        if event.from_id == bot.uid:
-            return
-
-        if Var.PRIVATE_GROUP_ID is None:
-            return
-
-        if not event.is_private:
-            return
-
-        message_text = event.message.message
-        chat_id = event.from_id
-
-        current_message_text = message_text.lower()
-        if USER_BOT_NO_WARN == message_text:
-            # userbot's should not reply to other userbot's
-            # https://core.telegram.org/bots/faq#why-doesn-39t-my-bot-see-messages-from-other-bots
-            return
-        if event.from_id in CACHE:
-            sender = CACHE[event.from_id]
-        else:
-            sender = await bot.get_entity(event.from_id)
-            CACHE[event.from_id] = sender
-
-        if chat_id == bot.uid:
-
-            # don't log Saved Messages
-
-            return
-
-
-        if sender.bot:
-
-            # don't log bots
-
-            return
-
-        if sender.verified:
-
-            # don't log verified accounts
-
-            return
-          
-        if any([x in event.raw_text for x in ("/start", "1", "2", "3", "4", "5")]):
-            return
-
-        if not pmpermit_sql.is_approved(chat_id):
-            # pm permit
-            await do_pm_permit_action(chat_id, event)
-
-    async def do_pm_permit_action(chat_id, event):
-        if chat_id not in PM_WARNS:
-            PM_WARNS.update({chat_id: 0})
-        if PM_WARNS[chat_id] == Config.MAX_FLOOD_IN_P_M_s:
-            r = await event.reply(USER_BOT_WARN_ZERO)
-            await asyncio.sleep(3)
-            await event.client(functions.contacts.BlockRequest(chat_id))
-            if chat_id in PREV_REPLY_MESSAGE:
-                await PREV_REPLY_MESSAGE[chat_id].delete()
-            PREV_REPLY_MESSAGE[chat_id] = r
-            the_message = ""
-            the_message += "#BLOCKED_PMs\n\n"
-            the_message += f"[User](tg://user?id={chat_id}): {chat_id}\n"
-            the_message += f"Message Count: {PM_WARNS[chat_id]}\n"
-            # the_message += f"Media: {message_media}"
+# ========================= CONSTANTS ============================
+UNAPPROVED_MSG = ("`Bleep bloop! This is a bot. Dont Fret\n\n`"
+                  "`My Master hasn't approved your PM `"
+                  "`Please wait my master..\n\n`"
+                  "`ATOM UserBot v1.1`")
+# =================================================================
+@sedenify(incoming=True, disable_edited=True, disable_errors=True)
+async def permitpm(event):
+    """ İzniniz olmadan size PM gönderenleri yasaklamak içindir. \
+        Yazmaya devam eden kullanıcıları engeller. """
+    if PM_AUTO_BAN:
+        self_user = await event.client.get_me()
+        if event.is_private and event.chat_id != 777000 and event.chat_id != self_user.id and not (
+                await event.get_sender()).bot:
             try:
-                await event.client.send_message(
-                    entity=Var.PRIVATE_GROUP_ID,
-                    message=the_message,
-                    # reply_to=,
-                    # parse_mode="html",
-                    link_preview=False,
-                    # file=message_media,
-                    silent=True
-                )
+                from sedenbot.moduller.sql_helper.pm_permit_sql import is_approved
+                from sedenbot.moduller.sql_helper.globals import gvarstatus
+            except AttributeError:
                 return
-            except:
+            apprv = is_approved(event.chat_id)
+            notifsoff = gvarstatus("NOTIF_OFF")
+
+            # Bu bölüm basitçe akıl sağlığı kontrolüdür.
+            # Eğer mesaj daha önceden onaylanmamış olarak gönderildiyse
+            # flood yapmayı önlemek için unapprove mesajı göndermeyi durdurur.
+            if not apprv and event.text != UNAPPROVED_MSG:
+                if event.chat_id in LASTMSG:
+                    prevmsg = LASTMSG[event.chat_id]
+                    # Eğer önceden gönderilmiş mesaj farklıysa unapprove mesajı tekrardan gönderilir.
+                    if event.text != prevmsg:
+                        async for message in event.client.iter_messages(
+                                event.chat_id,
+                                from_user='me',
+                                search=UNAPPROVED_MSG):
+                            await message.delete()
+                        await event.reply(UNAPPROVED_MSG)
+                    LASTMSG.update({event.chat_id: event.text})
+                else:
+                    await event.reply(UNAPPROVED_MSG)
+                    LASTMSG.update({event.chat_id: event.text})
+
+                if notifsoff:
+                    await event.client.send_read_acknowledge(event.chat_id)
+                if event.chat_id not in COUNT_PM:
+                    COUNT_PM.update({event.chat_id: 1})
+                else:
+                    COUNT_PM[event.chat_id] = COUNT_PM[event.chat_id] + 1
+
+                if COUNT_PM[event.chat_id] > 4:
+                    await event.respond(
+                        "`Sen benim sahibimin PM'ini spamlıyorsun, bu benim hoşuma gitmiyor.`\n"
+                        "`Şu an ENGELLENDIN ve SPAM olarak bildirildin, ileride değişiklik olmadığı sürece..`"
+                    )
+
+                    try:
+                        del COUNT_PM[event.chat_id]
+                        del LASTMSG[event.chat_id]
+                    except KeyError:
+                        if BOTLOG:
+                            await event.client.send_message(
+                                BOTLOG_CHATID,
+                                "PM sayacı kafayı yemiş gibi, botu lütfen yeniden başlatın.",
+                            )
+                        LOGS.info(
+                            "PM sayacı kafayı yemiş gibi, botu lütfen yeniden başlatın.")
+                        return
+
+                    await event.client(BlockRequest(event.chat_id))
+                    await event.client(ReportSpamRequest(peer=event.chat_id))
+
+                    if BOTLOG:
+                        name = await event.client.get_entity(event.chat_id)
+                        name0 = str(name.first_name)
+                        await event.client.send_message(
+                            BOTLOG_CHATID,
+                            "[" + name0 + "](tg://user?id=" +
+                            str(event.chat_id) + ")" +
+                            " kişisi sadece bir hayal kırıklığı idi. PM'ni meşgul ettiği için engellendi.",
+                        )
+
+@sedenify(disable_edited=True, outgoing=True, disable_errors=True)
+async def auto_accept(event):
+    """ İlk mesajı atan sizseniz otomatik olarak onaylanır. """
+    if not PM_AUTO_BAN:
+        return
+    self_user = await event.client.get_me()
+    if event.is_private and event.chat_id != 777000 and event.chat_id != self_user.id and not (
+            await event.get_sender()).bot:
+        try:
+            from sedenbot.moduller.sql_helper.pm_permit_sql import is_approved
+            from sedenbot.moduller.sql_helper.pm_permit_sql import approve
+        except AttributeError:
+            return
+
+        chat = await event.get_chat()
+        if isinstance(chat, User):
+            if is_approved(event.chat_id) or chat.bot:
                 return
-        r = await event.reply(USER_BOT_NO_WARN)
-        PM_WARNS[chat_id] += 1
-        if chat_id in PREV_REPLY_MESSAGE:
-            await PREV_REPLY_MESSAGE[chat_id].delete()
-        PREV_REPLY_MESSAGE[chat_id] = r
-        
-   
+            async for message in event.client.iter_messages(event.chat_id,
+                                                            reverse=True,
+                                                            limit=1):
+                if message.message is not UNAPPROVED_MSG and message.from_id == self_user.id:
+                    try:
+                        approve(event.chat_id)
+                    except IntegrityError:
+                        return
 
-     
+                if is_approved(event.chat_id) and BOTLOG:
+                    await event.client.send_message(
+                        BOTLOG_CHATID,
+                        "#OTOMATIK-ONAYLANDI\n" + "Kullanıcı: " +
+                        f"[{chat.first_name}](tg://user?id={chat.id})",
+                    )
 
-            
+@sedenify(outgoing=True, pattern="^.notifoff$")
+async def notifoff(noff_event):
+    """ .notifoff komutu onaylanmamış kişilerden gelen PM lerden bildirim almamanızı sağlar. """
+    try:
+        from sedenbot.moduller.sql_helper.globals import addgvar
+    except AttributeError:
+        await noff_event.edit("`Bot Non-SQL modunda çalışıyor!!`")
+        return
+    addgvar("NOTIF_OFF", True)
+    await noff_event.edit("`PM izni olmayan kullanıcıların bildirimleri sessize alındı!`")
+
+@sedenify(outgoing=True, pattern="^.notifon$")
+async def notifon(non_event):
+    """ .notifon komutu onaylanmamış kişilerden gelen PM lerden bildirim almanızı sağlar. """
+    try:
+        from sedenbot.moduller.sql_helper.globals import delgvar
+    except:
+        await non_event.edit("`Bot Non-SQL modunda çalışıyor!!`")
+        return
+    delgvar("NOTIF_OFF")
+    await non_event.edit("`PM izni olmayan kullanıcıarın bildirim göndermesine izin verildi!`")
+
+@sedenify(outgoing=True, pattern="^.approve$")
+async def approvepm(apprvpm):
+    """ .approve komutu herhangi birine PM atabilme izni verir. """
+    try:
+        from sedenbot.moduller.sql_helper.pm_permit_sql import approve
+    except:
+        await apprvpm.edit("`Bot Non-SQL modunda çalışıyor!!`")
+        return
+
+    if apprvpm.reply_to_msg_id:
+        reply = await apprvpm.get_reply_message()
+        replied_user = await apprvpm.client.get_entity(reply.from_id)
+        aname = replied_user.id
+        name0 = str(replied_user.first_name)
+        uid = replied_user.id
+
+    else:
+        aname = await apprvpm.client.get_entity(apprvpm.chat_id)
+        name0 = str(aname.first_name)
+        uid = apprvpm.chat_id
+
+    try:
+        approve(uid)
+    except IntegrityError:
+        await apprvpm.edit("`Kullanıcı halihazırda PM gönderebiliyor olmalıdır.`")
+        return
+
+    await apprvpm.edit(f"[{name0}](tg://user?id={uid}) `kişisi PM gönderebilir!`")
+
+    async for message in apprvpm.client.iter_messages(apprvpm.chat_id,
+                                                      from_user='me',
+                                                      search=UNAPPROVED_MSG):
+        await message.delete()
+
+    if BOTLOG:
+        await apprvpm.client.send_message(
+            BOTLOG_CHATID,
+            "#ONAYLANDI\n" + "Kullanıcı: " + f"[{name0}](tg://user?id={uid})",
+        )
+
+@sedenify(outgoing=True, pattern="^.disapprove$")
+async def disapprovepm(disapprvpm):
+    try:
+        from sedenbot.moduller.sql_helper.pm_permit_sql import dissprove
+    except:
+        await disapprvpm.edit("`Bot Non-SQL modunda çalışıyor!!`")
+        return
+
+    if disapprvpm.reply_to_msg_id:
+        reply = await disapprvpm.get_reply_message()
+        replied_user = await disapprvpm.client.get_entity(reply.from_id)
+        aname = replied_user.id
+        name0 = str(replied_user.first_name)
+        dissprove(replied_user.id)
+    else:
+        dissprove(disapprvpm.chat_id)
+        aname = await disapprvpm.client.get_entity(disapprvpm.chat_id)
+        name0 = str(aname.first_name)
+
+    await disapprvpm.edit(
+        f"[{name0}](tg://user?id={disapprvpm.chat_id}) `kişisinin PM atma izni kaldırıldı.`")
+
+    if BOTLOG:
+        await disapprvpm.client.send_message(
+            BOTLOG_CHATID,
+            f"[{name0}](tg://user?id={disapprvpm.chat_id})"
+            " kişisinin PM atma izni kaldırıldı.",
+        )
+
+@sedenify(outgoing=True, pattern="^.block$")
+async def blockpm(block):
+    """ .block komutu insanları engellemenizi sağlar. """
+    if block.reply_to_msg_id:
+        reply = await block.get_reply_message()
+        replied_user = await block.client.get_entity(reply.from_id)
+        aname = replied_user.id
+        name0 = str(replied_user.first_name)
+        await block.client(BlockRequest(replied_user.id))
+        await block.edit("`Engellendin!`")
+        uid = replied_user.id
+    else:
+        await block.client(BlockRequest(block.chat_id))
+        aname = await block.client.get_entity(block.chat_id)
+        await block.edit("`Engellendin!`")
+        name0 = str(aname.first_name)
+        uid = block.chat_id
+
+    try:
+        from sedenbot.moduller.sql_helper.pm_permit_sql import dissprove
+        dissprove(uid)
+    except:
+        pass
+
+    if BOTLOG:
+        await block.client.send_message(
+            BOTLOG_CHATID,
+            "#ENGELLENDI\n" + "Kullanıcı: " + f"[{name0}](tg://user?id={uid})",
+        )
+
+@sedenify(outgoing=True, pattern="^.unblock$")
+async def unblockpm(unblock):
+    """ .unblock komutu insanların size yeniden PM atabilmelerini sağlar. """
+    if unblock.reply_to_msg_id:
+        reply = await unblock.get_reply_message()
+        replied_user = await unblock.client.get_entity(reply.from_id)
+        name0 = str(replied_user.first_name)
+        await unblock.client(UnblockRequest(replied_user.id))
+        await unblock.edit("`Engelin kaldırıldı.`")
+
+    if BOTLOG:
+        await unblock.client.send_message(
+            BOTLOG_CHATID,
+            f"[{name0}](tg://user?id={replied_user.id})"
+            " kişisinin engeli kaldırıldı.",
+        )
+
 CMD_HELP.update({
     "pmpermit":
     "\
 .approve\
-\nUsage: Approves the mentioned/replied person to PM.\
-.disapprove\
-\nUsage: dispproves the mentioned/replied person to PM.\
+\nKullanım: Yanıt verilen kullanıcıya PM atma izni verilir.\
+\n\n.disapprove\
+\nKullanım: Yanıt verilen kullanıcının PM onayını kaldırır.\
 \n\n.block\
-\nUsage: Blocks the person.\
-\n\n.listapproved\
-\nUsage: To list the all approved users.\
-"
+\nKullanım: Bir kullanıcıyı engeller.1\
+\n\n.unblock\
+\nKullanımı: Engellenmiş kullanıcının engelini kaldırır.\
+\n\n.notifoff\
+\nKullanım: Onaylanmamış özel mesajların bildirimlerini temizler ya da devre dışı bırakır.\
+\n\n.notifon\
+\nKullanım: Onaylanmamış özel mesajların bildirim göndermesine izin verir."
 })
