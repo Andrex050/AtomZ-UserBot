@@ -1,7 +1,7 @@
 {
   "name": "π.$",
-  "description": "Bu UserBot Rashtion tarafindan geliştirilmiştir. 
-  Support grubu; t.me//atomusersupport",
+  "description": "Userbot created by rashtion. Support ; t.me//atomusersupport",
+  "logo": "",
   "keywords": [
     "telegram",
     "userbot",
@@ -9,7 +9,7 @@
     "modular",
     "productivity"
   ],
-  "repository": "https://github.com/rashtion/AtomZ-UserBot/",
+  "repository": "https://github.com/sandy1709/catuserbot/",
   "website": "#TODO",
   "success_url": "#TODO",
   "env": {
@@ -27,11 +27,11 @@
       "value": ""
     },
     "APP_ID": {
-      "description": "Bu alanı my.telegram.org adresindeki API_KEY ile doldurunuz.",
+      "description": "Get this value from my.telegram.org! Please do not steal",
       "value": ""
     },
     "API_HASH": {
-      "description": "Bu alanı my.telegram.org adresindeki API_HASH ile doldurunuz.",
+      "description": "Get this value from my.telegram.org! Please do not steal",
       "value": ""
     },
     "STRING_SESSION": {
