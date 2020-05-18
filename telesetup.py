@@ -7,10 +7,9 @@
 from telethon.sync import TelegramClient
 from telethon.sessions import StringSession
 
-print("""Lütfen my.telegram.org adresinden API Key ve Hash alınız.""")
-
-APP_ID = int(input("API KEY Girin: "))
-API_HASH = input("API Hash girin: ")
+print("""Bu alanı my.teleram.org'dan API bilgilerinizi alıp doldurunuz.""")
+APP_ID = int(input("APP ID Girin : "))
+API_HASH = input(" API HASH Girin: ")
 
 with TelegramClient(StringSession(), APP_ID, API_HASH) as client:
     print(client.session.save())
